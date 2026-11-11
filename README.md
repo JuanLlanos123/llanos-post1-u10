@@ -52,41 +52,7 @@ La complejidad ciclomática y la cobertura de ramas aportan información diferen
 Aunque la complejidad cognitiva también es útil para evaluar la dificultad de comprensión del código, no se utilizó como señal principal porque el objetivo de esta intervención es identificar y abordar la concentración de caminos de decisión, además de mejorar las condiciones para probarlos. Por esta razón, se priorizó la complejidad ciclomática y se utilizó la cobertura de ramas como evidencia complementaria para orientar las pruebas posteriores.
 
 
-Estado inicial del análisis
 
-Métrica
-
-Valor real observado
-
-Complejidad ciclomática de calcularCosto()
-
-20
-
-Cobertura de líneas de ServicioCalculoEnvio
-
-24 %
-
-Cobertura de ramas de ServicioCalculoEnvio
-
-18 %
-
-Code Smells reportados
-
-No aparecen issue
-
-Detalle de JaCoCo: la clase presenta 10 de 42 líneas cubiertas y 7 de 38 ramas cubiertas. El método calcularCosto(String, double, double, String, boolean) concentra una complejidad ciclomática de 20, mientras que el constructor presenta una complejidad de 1.
-
-Interpretación
-
-El análisis inicial permitió identificar que el método ServicioCalculoEnvio.calcularCosto() concentra el principal problema de complejidad del proyecto. Su complejidad ciclomática es de 20, lo que evidencia una cantidad considerable de caminos independientes de ejecución y decisiones condicionales. Esto puede dificultar la comprensión, el mantenimiento y la construcción de pruebas que contemplen todos sus comportamientos.
-
-En cuanto a la cobertura, el reporte de JaCoCo muestra que ServicioCalculoEnvio tiene una cobertura de líneas del 24 % y una cobertura de ramas del 18 %. De las 38 ramas identificadas, solamente 7 están cubiertas y 31 permanecen sin ejercitar. Por tanto, las pruebas existentes no recorren adecuadamente las diferentes alternativas de ejecución del método. En el detalle del reporte HTML se deben identificar las condiciones específicas que aparecen sin cubrir, para orientar la creación de pruebas adicionales.
-
-Decisión de diseño 3: selección de la métrica principal. Se decidió utilizar la complejidad ciclomática como señal principal para seleccionar el método que se intervendrá en la Parte 2, debido a que permite identificar la concentración de decisiones y caminos independientes de ejecución. La cobertura de ramas se utilizó como indicador complementario, porque permite comprobar qué proporción de esas alternativas está siendo recorrida por las pruebas.
-
-En este proyecto ambas señales apuntan a ServicioCalculoEnvio.calcularCosto(), que presenta una complejidad ciclomática de 20 y una cobertura de ramas del 18 %. Esta coincidencia justifica su selección como candidato para la refactorización, ya que combina una lógica con numerosos caminos de decisión y una cobertura insuficiente. Aunque la complejidad cognitiva también es útil para evaluar la facilidad de comprensión del código, se priorizó la complejidad ciclomática porque el objetivo de la intervención es abordar la cantidad de caminos de ejecución y mejorar las condiciones para probarlos.
-
-Capturas del análisis inicial ---> docs/parte1/
 
 
 
@@ -139,3 +105,50 @@ Respecto a la cobertura, se estableció un mínimo del 70 % en lugar de exigir e
 El umbral del 70 % permite mantener una cobertura significativa sobre la lógica de negocio, dejando un margen razonable para componentes de infraestructura, configuración y arranque que no necesariamente requieren el mismo nivel de pruebas. Además, permite priorizar escenarios importantes y verificar comportamientos diferentes mediante aserciones, en lugar de agregar pruebas únicamente para mejorar el porcentaje.
 
 En conclusión, los umbrales seleccionados buscan que el proyecto mantenga métodos con una complejidad razonable y una cobertura suficiente para detectar errores en sus comportamientos principales. La intención no es alcanzar indicadores perfectos de manera artificial, sino utilizar las métricas como criterios objetivos para orientar la refactorización y mejorar la mantenibilidad, la testabilidad y la calidad general del software.
+
+
+## Comparación antes / después
+
+| Métrica | Antes (Parte 1) | Después (Parte 2) |
+|---------|------------------|--------------------|
+| Complejidad ciclomática de `calcularCosto()` | 20 | 5 |
+| Cobertura de líneas de `ServicioCalculoEnvio` | 24 % | 100 % |
+| Cobertura de ramas de la lógica de envío | 18 % | 100 % |
+| Code Smells | 0 observados | 0 observados |
+| Quality Gate | — | Estandar Labooratorio |
+
+## Interpretación de los resultados
+
+La comparación entre el análisis inicial y el posterior a la refactorización evidencia una mejora importante en la estructura y la testabilidad del proyecto. Inicialmente, el método `ServicioCalculoEnvio.calcularCosto()` presentaba una complejidad ciclomática de 20, mientras que después de aplicar el patrón Strategy su complejidad se redujo a 5. Esto representa una disminución del 75 % en la complejidad del método original, al trasladar las diferentes fórmulas de cálculo a cuatro implementaciones independientes: `EnvioEstandarStrategy`, `EnvioExpressStrategy`, `EnvioInternacionalStrategy` y `EnvioOvernightStrategy`.
+
+En cuanto a la cobertura, `ServicioCalculoEnvio` pasó de un 24 % de cobertura de líneas y un 18 % de cobertura de ramas a un 100 % en ambas métricas. El nuevo reporte de JaCoCo muestra que el servicio tiene 8 de 8 ramas cubiertas y las cuatro estrategias reúnen otras 24 ramas, también cubiertas en su totalidad. Por tanto, la lógica de envío presenta 32 de 32 ramas cubiertas, sin alternativas de ejecución pendientes de ejercitar en estas clases.
+
+También se observa que cada estrategia tiene una complejidad ciclomática de 5, mientras que el servicio mantiene una complejidad total de 6 al considerar sus dos métodos, incluido el constructor. Esto permite distribuir la lógica en componentes más pequeños y especializados, facilitando su comprensión, mantenimiento y comprobación mediante pruebas unitarias.
+
+Es importante señalar que la complejidad no desapareció del sistema, sino que se distribuyó entre las implementaciones de Strategy. Por esta razón, la mejora principal consiste en reducir la complejidad concentrada en el método original y separar cada algoritmo según su responsabilidad. Asimismo, el número de ramas pasó de 38 a 32 porque la estructura del código cambió con la refactorización, por lo que la comparación representa una mejora en las métricas y no una correspondencia individual entre las ramas antiguas y las nuevas.
+
+Finalmente, el análisis global posterior de JaCoCo muestra un 97 % de cobertura de instrucciones y un 100 % de cobertura de ramas en el proyecto completo. La diferencia restante en instrucciones corresponde al paquete principal de la aplicación, mientras que los paquetes de estrategias y servicios presentan un 100 % de cobertura. Los resultados de Code Smells y Quality Gate deben complementarse con el dashboard de SonarQube, ya que no son métricas proporcionadas por JaCoCo.
+
+En conclusión, la aplicación de Strategy permitió reducir la complejidad ciclomática del método principal, mejorar la separación de responsabilidades y alcanzar una cobertura completa de ramas en la lógica de envío. Estos resultados respaldan la decisión de refactorización y demuestran que las mejoras no se limitaron a reorganizar el código, sino que también facilitaron la comprobación de sus diferentes comportamientos.
+
+Capturas
+
+
+
+Análisis inicial — Parte 1 --->docs/parte1-antes-de-refatcorizar
+
+Análisis final — Parte 2--->docs/refactor-strategy
+
+
+##Herramientas utilizadas
+
+Java 21.Apache Maven.
+JUnit 5 para las pruebas unitarias.
+SonarQube Community Edition para el análisis estático de calidad.
+JaCoCo 0.8.16 para medir la cobertura de instrucciones, líneas y ramas.
+Docker para ejecutar SonarQube localmente.
+Git y GitHub para el control de versiones y almacenamiento del repositorio.
+
+##Conclusiones
+
+El desarrollo de este proyecto permitió comprender que las métricas de calidad son herramientas para identificar problemas de diseño y orientar decisiones de refactorización, no simplemente indicadores que se deben mejorar numéricamente. Mediante el análisis inicial se identificó que ServicioCalculoEnvio.calcularCosto() concentraba una complejidad ciclomática de 20 y una cobertura de ramas del 18 %, lo que justificó la aplicación del patrón Strategy para separar las diferentes fórmulas de cálculo. Después de la refactorización, la complejidad del método se redujo a 5 y se alcanzó un 100 % de cobertura de ramas en el servicio y las estrategias, demostrando una mejora en la organización del código y en su testabilidad. Finalmente, se comprendió la importancia de establecer umbrales realistas de complejidad y cobertura, priorizando pruebas que verifiquen comportamientos reales en lugar de perseguir porcentajes artificiales.
